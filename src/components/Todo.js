@@ -1,12 +1,13 @@
 import Card from "@mui/material/Card";
+import { useState } from "react";
 import React from "react";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogContentText from '@mui/material/DialogContentText';
-import DialogTitle from '@mui/material/DialogTitle';
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import CheckIcon from "@mui/icons-material/Check";
@@ -15,46 +16,67 @@ import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { TodosContext } from "../context/todosContext";
 import { useContext } from "react";
-import Slide from '@mui/material/Slide';
-import { useState } from "react";
-
-
+import Slide from "@mui/material/Slide";
+import TextField from "@mui/material/TextField";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
 
-function Todo({todo}) {
+function Todo({ todo }) {
   const [showDeletDialg, setShowDeletDialg] = useState(false);
-  const {todos, setTodos} = useContext(TodosContext);
+  const [showUpdateDialg, setShowUpdateDialg] = useState(false);
+  const [updatedTodo, setUpdatedTodo] = useState({
+    title: todo.title,
+    details: todo.details,
+  });
+  const { todos, setTodos } = useContext(TodosContext);
 
   // Function to handle the check click
   function handelCheckClick() {
-     setTodos(
-      todos.map((t) =>
-        t.id === todo.id ? { ...todo, isCompleted: !t.isCompleted } : t
-      )
+    const updatedTodos = todos.map((t) =>
+      t.id === todo.id ? { ...todo, isCompleted: !t.isCompleted } : t
     );
+    setTodos(updatedTodos);
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
   }
   // Function to handle the delete click
   function handelDeleteClick() {
     setShowDeletDialg(true);
   }
   // Function to handle the close of the delete dialog
-  function handelClose() {
+  function handelDeleteDialogClose() {
     setShowDeletDialg(false);
   }
   // Function to handle the confirm delete action
   function handelDeletConfirm() {
-    setTodos(todos.filter((t) => t.id !== todo.id));
+    const updatedTodos = todos.filter((t) => t.id !== todo.id);
+    setTodos(updatedTodos);
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+
     setShowDeletDialg(false);
+  }
+  // Function to handle the close of the update dialog
+  function handelUpdateDialogClose() {
+    setShowUpdateDialg(false);
+  }
+  // Function to handle the update confirm action
+  function handelUpdateConfirm() {
+    const updatedTodos = todos.map((t) =>
+      t.id === todo.id
+        ? { ...todo, title: updatedTodo.title, details: updatedTodo.details }
+        : t
+    );
+    setTodos(updatedTodos);
+    localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    setShowUpdateDialg(false);
   }
   return (
     <>
-  {/* Delete Modal */}
-    <Dialog
-    style={{direction:"rtl"}}
-    onClose={handelClose}
+      {/* Delete Modal */}
+      <Dialog
+        style={{ direction: "rtl" }}
+        onClose={handelDeleteDialogClose}
         open={showDeletDialg}
         slots={{
           transition: Transition,
@@ -65,16 +87,63 @@ function Todo({todo}) {
         <DialogTitle>{"هل انت متأكد من حذف المهمة"}</DialogTitle>
         <DialogContent>
           <DialogContentText id="alert-dialog-slide-description">
-           لا يمكنك استرجاع المهمة بعد حذفها، هل أنت متأكد من أنك تريد حذفها؟
+            لا يمكنك استرجاع المهمة بعد حذفها، هل أنت متأكد من أنك تريد حذفها؟
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handelClose}>إغلاق</Button>
-          <Button onClick={handelDeletConfirm} >نعم،قم بالحذف</Button>
+          <Button onClick={handelDeleteDialogClose}>إغلاق</Button>
+          <Button onClick={handelDeletConfirm}>نعم،قم بالحذف</Button>
         </DialogActions>
       </Dialog>
-
-  {/* ===Delete Modal=== */}
+      {/* ===Delete Modal=== */}
+      {/* Edit Modal */}
+      <Dialog
+        style={{ direction: "rtl" }}
+        onClose={handelUpdateDialogClose}
+        open={showUpdateDialg}
+        slots={{
+          transition: Transition,
+        }}
+        keepMounted
+        aria-describedby="alert-dialog-slide-description"
+      >
+        <DialogTitle>{"تعديل المهمة "}</DialogTitle>
+        <DialogContent>
+          <TextField
+            value={updatedTodo.title}
+            onChange={(e) =>
+              setUpdatedTodo({ ...updatedTodo, title: e.target.value })
+            }
+            autoFocus
+            required
+            margin="dense"
+            id="name"
+            name="email"
+            label="عنوان المهمة"
+            fullWidth
+            variant="standard"
+          />
+          <TextField
+            value={updatedTodo.details}
+            onChange={(e) =>
+              setUpdatedTodo({ ...updatedTodo, details: e.target.value })
+            }
+            autoFocus
+            required
+            margin="dense"
+            id="name"
+            name="email"
+            label=" التفاصيل"
+            fullWidth
+            variant="standard"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handelUpdateDialogClose}>إغلاق</Button>
+          <Button onClick={handelUpdateConfirm}>تأكيد</Button>
+        </DialogActions>
+      </Dialog>
+      {/* ===Edit Modal=== */}
 
       <Card
         className="todoCard"
@@ -88,7 +157,13 @@ function Todo({todo}) {
         <CardContent>
           <Grid container spacing={2}>
             <Grid size={8}>
-              <Typography variant="h5" sx={{ textAlign: "right" }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  textAlign: "right",
+                  textDecoration: todo.isCompleted ? "line-through" : "none",
+                }}
+              >
                 {todo.title}
               </Typography>
               <Typography variant="h6" sx={{ textAlign: "right" }}>
@@ -114,6 +189,7 @@ function Todo({todo}) {
                 <CheckIcon />
               </IconButton>
               <IconButton
+                onClick={() => setShowUpdateDialg(true)}
                 className="iconbtn"
                 sx={{
                   color: "#1769aa",
@@ -124,7 +200,7 @@ function Todo({todo}) {
                 <EditOutlinedIcon />
               </IconButton>
               <IconButton
-              onClick={handelDeleteClick}
+                onClick={handelDeleteClick}
                 className="iconbtn"
                 sx={{
                   color: "#b23c17",
