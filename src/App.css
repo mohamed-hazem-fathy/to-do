@@ -1,5 +1,7 @@
 .App {
   text-align: center;
+  font-family:"Alexandria"
+
 }
 
 .App-logo {
@@ -35,4 +37,46 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+/* Custom Fonts */
+@font-face {
+  font-family: Alexandria;
+  src: url("/public/fonts/Alexandria-Regular.ttf");
+  font-weight: normal;
+}
+@font-face {
+  font-family: Alexandria;
+  src: url("/public/fonts/Alexandria-Bold.ttf");
+  font-weight: bold;
+}
+@font-face {
+  font-family: Alexandria;
+  src: url("/public/fonts/Alexandria-Black.ttf");
+  font-weight: 900;
+}
+
+@font-face {
+  font-family: Alexandria;
+  src: url("/public/fonts/Alexandria-Light.ttf");
+  font-weight: 200;
+}
+
+/*--Custom Fonts--*/
+
+.iconbtn {
+  transition: all 0.2s !important;
+}
+.iconbtn:hover {
+  background-color: #c5c5c5 !important;
+  transform: scale(1.1);
+  box-shadow: 0px 7px 7px rgba(0, 0, 0, 0.4);
+}
+.todoCard {
+  transition: all 0.2s !important;
+}
+.todoCard:hover {
+  padding-top: 20px;
+  padding-bottom: 20px;
+  box-shadow: 0px 7px 7px rgba(0, 0, 0, 0.4);
 }
