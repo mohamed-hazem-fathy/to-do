@@ -3,11 +3,7 @@ import { useState } from "react";
 import React from "react";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
+
 import Button from "@mui/material/Button";
 import Grid from "@mui/material/Grid";
 import CheckIcon from "@mui/icons-material/Check";
@@ -15,16 +11,23 @@ import IconButton from "@mui/material/IconButton";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { TodosContext } from "../context/todosContext";
+import { TostContext } from "../context/Toast";
 import { useContext } from "react";
-import Slide from "@mui/material/Slide";
+
 import TextField from "@mui/material/TextField";
+
+//Dialog
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogTitle from "@mui/material/DialogTitle";
+import Slide from "@mui/material/Slide";
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="up" ref={ref} {...props} />;
 });
-
-function Todo({ todo }) {
-  const [showDeletDialg, setShowDeletDialg] = useState(false);
+function Todo({ todo, showDelete }) {
+   const { showHideToast } = useContext(TostContext);
   const [showUpdateDialg, setShowUpdateDialg] = useState(false);
   const [updatedTodo, setUpdatedTodo] = useState({
     title: todo.title,
@@ -39,23 +42,13 @@ function Todo({ todo }) {
     );
     setTodos(updatedTodos);
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
+    showHideToast(" تم االتعديل بنجاح")
   }
   // Function to handle the delete click
   function handelDeleteClick() {
-    setShowDeletDialg(true);
+    showDelete(todo);
   }
-  // Function to handle the close of the delete dialog
-  function handelDeleteDialogClose() {
-    setShowDeletDialg(false);
-  }
-  // Function to handle the confirm delete action
-  function handelDeletConfirm() {
-    const updatedTodos = todos.filter((t) => t.id !== todo.id);
-    setTodos(updatedTodos);
-    localStorage.setItem("todos", JSON.stringify(updatedTodos));
 
-    setShowDeletDialg(false);
-  }
   // Function to handle the close of the update dialog
   function handelUpdateDialogClose() {
     setShowUpdateDialg(false);
@@ -70,32 +63,10 @@ function Todo({ todo }) {
     setTodos(updatedTodos);
     localStorage.setItem("todos", JSON.stringify(updatedTodos));
     setShowUpdateDialg(false);
+    showHideToast(" تم التحديث بنجاح")
   }
   return (
     <>
-      {/* Delete Modal */}
-      <Dialog
-        style={{ direction: "rtl" }}
-        onClose={handelDeleteDialogClose}
-        open={showDeletDialg}
-        slots={{
-          transition: Transition,
-        }}
-        keepMounted
-        aria-describedby="alert-dialog-slide-description"
-      >
-        <DialogTitle>{"هل انت متأكد من حذف المهمة"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-slide-description">
-            لا يمكنك استرجاع المهمة بعد حذفها، هل أنت متأكد من أنك تريد حذفها؟
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handelDeleteDialogClose}>إغلاق</Button>
-          <Button onClick={handelDeletConfirm}>نعم،قم بالحذف</Button>
-        </DialogActions>
-      </Dialog>
-      {/* ===Delete Modal=== */}
       {/* Edit Modal */}
       <Dialog
         style={{ direction: "rtl" }}
